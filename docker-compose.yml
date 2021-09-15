@@ -1,32 +1,20 @@
-# After staring container, don't forget to install db :
-#   docker exec -it airnotifier python /airnotifier/install.py
+version: '3'
 
-version: "3"
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     ports:
       - 27017:27017
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/tmp/mongo/mongo.log
     volumes:
-      - ./mongo/data:/data/db
-      - ./mongo/log:/tmp/mongo
-    command: mongod --logpath=/dev/null # --quiet
+      - C:\docker-volume\airnotifier\mongo\db:/data/db
+      - C:\docker-volume\airnotifier\mongo\/configdb:/data/configdb
   airnotifier:
-    links:
-      - mongodb
-    depends_on:
-      - mongodb
     build: .
-    container_name: airnotifier
-    volumes:
-      - ./certs:/var/airnotifier/pemdir
-      - ./logs:/var/log/airnotifier
     ports:
       - 8801:8801
-    environment:
-      - MONGO_SERVER=mongodb
-      - MONGO_PORT=27017
+    depends_on:
+      - mongo

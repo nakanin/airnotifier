@@ -1,24 +1,18 @@
-FROM python:3.6
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive TERM=linux
+FROM python:3
 
-EXPOSE 8801
+RUN pip install pipenv
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends git ca-certificates
-
-RUN pip3 install pipenv
-
-RUN git clone -b 2.x https://github.com/airnotifier/airnotifier.git /airnotifier
-RUN mkdir -p /var/airnotifier/pemdir && \
-    mkdir -p /var/log/airnotifier
-
-VOLUME ["/airnotifier", "/var/log/airnotifier", "/var/airnotifier/pemdir"]
+RUN git clone -b master git://github.com/airnotifier/airnotifier.git airnotifier
 WORKDIR /airnotifier
 
 RUN pipenv install --deploy
 
-ADD start.sh /airnotifier
-RUN chmod a+x /airnotifier/start.sh
-ENTRYPOINT /airnotifier/start.sh
+COPY config.py .
+
+# RUN pipenv run ./install.py 
+# 上記は mongodb に接続する必要があるため、初回起動後に手動で実施する
+# 例）
+# docker-compose exec airnotifier bas
+# pipenv run ./install.py
+
+CMD [ "pipenv", "run", "./app.py" ]
